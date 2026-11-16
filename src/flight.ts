@@ -35,12 +35,13 @@ export type FlightInput = {
   paused: boolean
   reset: number
   activate: boolean
+  recovering: boolean
 }
 
 export function createInput(): FlightInput {
   return {
     keys: new Set(), touches: new Map(), orbit: 0, pitch: .38,
-    distance: 11, orbitUntil: 0, paused: true, reset: 0, activate: false,
+    distance: 11, orbitUntil: 0, paused: true, reset: 0, activate: false, recovering: false,
   }
 }
 

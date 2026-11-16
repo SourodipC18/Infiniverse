@@ -6,7 +6,7 @@ A browser exploration game, beginning with a 1 × 1 km alien island, a hovercraf
 
 ## Current status
 
-**Phase 4 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
+**Phase 5 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
 
 Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, controls, ocean wrapping, hazards, respawn rules, architecture, and acceptance checks.
 
@@ -20,7 +20,7 @@ Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, 
 - Restart at the dock, with run progress reset, after hitting a danger.
 - Use desktop or touch controls with adjustable graphics and optional sound.
 
-The island, beacon survey, and repeating ocean are available now. Phase 5 adds hazards.
+The island survey now includes an offshore storm and an electrical field. A collision ends the run and returns you to the dock after a short delay, clearing beacon progress. A completed survey stays complete while you explore, until you reset or reload.
 
 ## Development roadmap
 
@@ -30,7 +30,7 @@ The island, beacon survey, and repeating ocean are available now. Phase 5 adds h
 | 2 | Application, hovercraft controls, and camera | Complete |
 | 3 | Island, ocean, landmarks, and beacons | Complete |
 | 4 | Seamless repeating world | Complete |
-| 5 | Hazards, restart, and completion | Planned |
+| 5 | Hazards, restart, and completion | Complete |
 | 6 | Visual polish, mobile support, and QA | Planned |
 | 7 | Verified production publication | Planned |
 
@@ -66,7 +66,7 @@ The minimap is schematic. The heading arrow and distance point to the next unlit
 
 ## Vercel
 
-[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 4 island runs locally.
+[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 5 island runs locally.
 
 ## References
 

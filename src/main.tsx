@@ -3,7 +3,8 @@ import { Component, useCallback, useEffect, useRef, useState, type PointerEvent,
 import { createRoot } from 'react-dom/client'
 import { MathUtils } from 'three'
 import { createInput, keyBindings } from './flight'
-import { Range } from './Range'
+import { Range, type HazardNotice } from './Range'
+import { HAZARDS } from './hazards'
 import { DOCK, freshSurvey } from './island'
 import { SurveyHud } from './SurveyHud'
 import './style.css'
@@ -30,6 +31,7 @@ function Game() {
   const [motion, setMotion] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [telemetry, setTelemetry] = useState({ speed: 0, x: DOCK.x, z: DOCK.z, heading: .28 })
   const [survey, setSurvey] = useState(freshSurvey)
+  const [hazard, setHazard] = useState<HazardNotice>(null)
   const [webgl] = useState(() => {
     try {
       const context = document.createElement('canvas').getContext('webgl2')
@@ -82,10 +84,11 @@ function Game() {
       }
       if (mode !== 'driving') return
       if (event.code === 'KeyR' && !event.repeat) reset()
+      if (input.recovering) return
       if (event.code === 'KeyE' && !event.repeat) input.activate = true
       if (keyBindings[event.code]) {
         event.preventDefault()
-        input.keys.add(event.code)
+        if (!event.repeat) input.keys.add(event.code)
       }
     }
     const onUp = (event: KeyboardEvent) => { input.keys.delete(event.code) }
@@ -107,7 +110,7 @@ function Game() {
     const element = surface.current
     if (!element) return
     const zoom = (event: WheelEvent) => {
-      if (input.paused) return
+      if (input.paused || input.recovering) return
       event.preventDefault()
       const scale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1
       input.distance = MathUtils.clamp(input.distance + event.deltaY * scale * .011, 6, 23)
@@ -117,14 +120,14 @@ function Game() {
   }, [input])
 
   const pointerStart = (event: PointerEvent<HTMLDivElement>) => {
-    if (input.paused || event.button !== 0 || pointers.current.size >= 2) return
+    if (input.paused || input.recovering || event.button !== 0 || pointers.current.size >= 2) return
     event.currentTarget.setPointerCapture(event.pointerId)
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
   }
 
   const pointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const previous = pointers.current.get(event.pointerId)
-    if (input.paused || !previous) return
+    if (input.paused || input.recovering || !previous) return
     const next = { x: event.clientX, y: event.clientY }
     const other = [...pointers.current].find(([id]) => id !== event.pointerId)?.[1]
     if (other) {
@@ -149,7 +152,7 @@ function Game() {
     const release = (event: PointerEvent<HTMLButtonElement>) => { input.touches.delete(event.pointerId) }
     return <button type="button" className={'pad ' + action} aria-label={label}
       onPointerDown={event => {
-        if (input.paused || event.button !== 0) return
+        if (input.paused || input.recovering || event.button !== 0) return
         event.preventDefault()
         event.currentTarget.setPointerCapture(event.pointerId)
         input.touches.set(event.pointerId, action)
@@ -166,7 +169,7 @@ function Game() {
       {webgl && <SceneBoundary>
         <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 1300 }}
           dpr={[1, 1.65]} gl={{ antialias: true }}>
-          <Range input={input} onTelemetry={report} onSurvey={setSurvey} survey={survey} reducedMotion={!motion} />
+          <Range input={input} onTelemetry={report} onSurvey={setSurvey} onHazard={setHazard} survey={survey} reducedMotion={!motion} />
         </Canvas>
       </SceneBoundary>}
     </div>
@@ -182,20 +185,25 @@ function Game() {
     </header>
 
     {(!webgl || mode !== 'driving') && <section className="intro" aria-labelledby="screen-title">
-      <p className="region">Phase 4 · Open ocean</p>
+      <p className="region">Phase 5 · Island survey</p>
       <h1 id="screen-title">{mode === 'paused' ? 'Flight paused' : 'Twilight Island'}</h1>
       {webgl ? <>
-        <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Follow the trails to three beacons, activate each one, then bring the hovercraft back to the dock.'}</p>
+        <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Activate three beacons and return to Arrival Dock. Give the offshore storm and the electrical field a wide berth.'}</p>
         <button type="button" className="primary" onClick={() => transition('driving')}>
           {mode === 'paused' ? 'Resume flight' : 'Start flight'} <span aria-hidden="true">→</span>
         </button>
       </> : <p role="alert">This game needs WebGL 2. Try a browser with hardware acceleration enabled.</p>}
     </section>}
 
-    {mode === 'driving' && <SurveyHud survey={survey} position={telemetry} heading={telemetry.heading}
+    {mode === 'driving' && !hazard?.failed && <SurveyHud survey={survey} position={telemetry} heading={telemetry.heading}
       activate={() => { input.activate = true; surface.current?.focus({ preventScroll: true }) }} />}
 
-    {mode === 'driving' && <div className="touch-controls" aria-label="Touch flight controls">
+    {mode === 'driving' && hazard && <div role="alert" className={hazard.failed ? 'hazard-alert failed' : 'hazard-alert'}>
+      <strong>{hazard.failed ? 'Run ended' : '⚠ Danger ahead'}</strong>
+      <span>{HAZARDS[hazard.id].name}{hazard.failed ? ' · Returning to Arrival Dock…' : ' · Steer clear'}</span>
+    </div>}
+
+    {mode === 'driving' && !hazard?.failed && <div className="touch-controls" aria-label="Touch flight controls">
       <div>{touchButton('left', 'Steer left', '←')}{touchButton('right', 'Steer right', '→')}</div>
       <div>{touchButton('brake', 'Brake and reverse', '−')}{touchButton('boost', 'Boost', '⚡')}{touchButton('drive', 'Accelerate', '↑')}</div>
     </div>}

@@ -101,3 +101,18 @@ kbd { font-family: 'IBM Plex Mono', monospace; border: 1px solid #e1d8f457; bord
 @media (max-height: 450px) and (pointer: coarse) {
   .survey-map { display: none; }
 }
+
+.hazard-alert {
+  position: absolute; z-index: 3; top: calc(4.6rem + env(safe-area-inset-top)); left: clamp(.9rem, 4vw, 2.75rem);
+  border: 1px solid #ffc08a86; border-radius: .55rem; background: #321d29ed;
+  padding: .65rem .85rem; display: grid; gap: .22rem; pointer-events: none;
+}
+.hazard-alert strong { color: #ffcf99; font-size: .88rem; }
+.hazard-alert span { color: #f1dfe5; font-size: .78rem; }
+.hazard-alert.failed {
+  top: 46%; left: 50%; translate: -50% -50%; width: max-content;
+  max-width: calc(100% - 1.8rem); text-align: center; padding: 1rem 1.2rem;
+}
+@media (max-width: 530px) {
+  .hazard-alert:not(.failed) { top: auto; bottom: calc(10.2rem + env(safe-area-inset-bottom)); }
+}

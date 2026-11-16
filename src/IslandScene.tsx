@@ -1,7 +1,10 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo } from 'react'
+import { useMemo, type RefObject } from 'react'
 import { BufferAttribute, BufferGeometry, Color, DoubleSide, PlaneGeometry } from 'three'
 import { BEACONS, CAUSEWAY, CELL_SIZE, DOCK, isLit, surfaceHeight, terrainHeight, type Point, type Survey } from './island'
+
+import { HazardMarker } from './HazardMarkers'
+import { HAZARD_IDS } from './hazards'
 
 const stone = new Color('#50425f')
 const grass = new Color('#395355')
@@ -186,7 +189,7 @@ function Landmark({ index, lit }: { index: number; lit: boolean }) {
 
 const tileOffsets = [-CELL_SIZE, 0, CELL_SIZE]
 
-export function IslandScene({ survey, reducedMotion }: { survey: Survey; reducedMotion: boolean }) {
+export function IslandScene({ survey, reducedMotion, elapsed }: { survey: Survey; reducedMotion: boolean; elapsed: RefObject<number> }) {
   const terrain = useMemo(() => landscapeGeometry(false), [])
   const paths = useMemo(trailGeometry, [])
   const water = useMemo(() => landscapeGeometry(true), [])
@@ -200,6 +203,7 @@ export function IslandScene({ survey, reducedMotion }: { survey: Survey; reduced
       <mesh geometry={paths}><meshStandardMaterial color="#968887" roughness={.91} side={DoubleSide} /></mesh>
       <Dock />
       <Causeway />
+      {HAZARD_IDS.map(id => <HazardMarker key={id} id={id} elapsed={elapsed} reducedMotion={reducedMotion} />)}
       {BEACONS.map((beacon, index) => <Landmark key={beacon.id} index={index} lit={isLit(survey, index)} />)}
     </group>
   )))}</>

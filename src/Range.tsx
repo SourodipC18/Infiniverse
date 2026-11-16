@@ -4,6 +4,9 @@ import { BackSide, Group, MathUtils, Vector3 } from 'three'
 import { FIXED_STEP, spawn, stepCraft, type FlightInput } from './flight'
 import { freshSurvey, surfaceHeight, updateSurvey, type Survey } from './island'
 import { IslandScene } from './IslandScene'
+import { hazardAt, RECOVERY_SECONDS, type HazardId } from './hazards'
+
+export type HazardNotice = { id: HazardId; failed: boolean } | null
 
 const skyVertex = `
 varying vec3 direction;
@@ -86,10 +89,11 @@ function Hovercraft() {
   </>
 }
 
-export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
+export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedMotion }: {
   input: FlightInput
   onTelemetry: (speed: number, x: number, z: number, heading: number) => void
   onSurvey: (survey: Survey) => void
+  onHazard: (notice: HazardNotice) => void
   survey: Survey
   reducedMotion: boolean
 }) {
@@ -99,6 +103,15 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
   const viewedReset = useRef(-1)
   const accumulator = useRef(0)
   const timer = useRef(0)
+  const elapsed = useRef(0)
+  const recovery = useRef(0)
+  const notice = useRef<HazardNotice>(null)
+
+  const reportHazard = (id: HazardId | null, failed = false) => {
+    if (id === (notice.current?.id ?? null) && failed === (notice.current?.failed ?? false)) return
+    notice.current = id ? { id, failed } : null
+    onHazard(notice.current)
+  }
   const vectors = useMemo(() => ({
     position: new Vector3(), lookTarget: new Vector3(), smoothedLook: new Vector3(),
   }), [])
@@ -112,10 +125,26 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
       accumulator.current = 0
       run.current = freshSurvey()
       onSurvey(run.current)
+      elapsed.current = 0
+      input.recovering = false
+      input.keys.clear()
+      input.touches.clear()
+      input.activate = false
+      reportHazard(null)
     }
 
     const state = craft.current
-    if (!input.paused) {
+    if (!input.paused && input.recovering) {
+      recovery.current -= Math.min(delta, .1)
+      if (recovery.current <= 0) {
+        input.orbit = 0
+        input.pitch = .38
+        input.distance = 11
+        input.orbitUntil = 0
+        input.reset += 1
+      }
+    }
+    if (!input.paused && !input.recovering) {
       accumulator.current += Math.min(delta, .1)
       while (accumulator.current >= FIXED_STEP) {
         const shift = stepCraft(state, input, FIXED_STEP)
@@ -124,18 +153,34 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
         vectors.smoothedLook.x += shift.x
         vectors.smoothedLook.z += shift.z
         accumulator.current -= FIXED_STEP
+        elapsed.current += FIXED_STEP
+        const hit = run.current.complete ? null : hazardAt(state, elapsed.current, 'dangerRadius')
+        if (hit) {
+          state.speed = 0
+          state.steering = 0
+          input.recovering = true
+          input.keys.clear()
+          input.touches.clear()
+          input.activate = false
+          recovery.current = RECOVERY_SECONDS
+          reportHazard(hit, true)
+          break
+        }
       }
-      const next = updateSurvey(run.current, state, input.activate)
-      input.activate = false
-      if (next !== run.current) {
-        run.current = next
-        onSurvey(next)
-      }
-      if (performance.now() > input.orbitUntil && Math.abs(state.speed) > .2) {
-        input.orbit = MathUtils.damp(input.orbit, 0, 2.6, delta)
+      if (!input.recovering) {
+        const next = updateSurvey(run.current, state, input.activate)
+        input.activate = false
+        if (next !== run.current) {
+          run.current = next
+          onSurvey(next)
+        }
+        reportHazard(next.complete ? null : hazardAt(state, elapsed.current, 'warningRadius'))
+        if (performance.now() > input.orbitUntil && Math.abs(state.speed) > .2) {
+          input.orbit = MathUtils.damp(input.orbit, 0, 2.6, delta)
+        }
       }
     }
-    const bob = reducedMotion || input.paused ? 0 : Math.sin(clock.elapsedTime * 2.8) * .075
+    const bob = reducedMotion || input.paused || input.recovering ? 0 : Math.sin(clock.elapsedTime * 2.8) * .075
     const height = surfaceHeight(state.x, state.z)
     craftMesh.current.position.set(state.x, height + .79 + bob, state.z)
     craftMesh.current.rotation.set(0, -state.heading, reducedMotion ? 0 : -state.steering * state.speed * .009)
@@ -168,7 +213,7 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
 
   return <>
     <Sky />
-    <IslandScene survey={survey} reducedMotion={reducedMotion} />
+    <IslandScene survey={survey} reducedMotion={reducedMotion} elapsed={elapsed} />
     <group ref={craftMesh}>
       <Hovercraft />
     </group>
