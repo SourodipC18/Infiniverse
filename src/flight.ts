@@ -1,4 +1,4 @@
-import { DOCK, WORLD_HALF } from "./island.ts"
+import { DOCK, wrapCoordinate } from "./island.ts"
 export const FIXED_STEP = 1 / 120
 
 export type CraftState = {
@@ -71,10 +71,10 @@ export function stepCraft(craft: CraftState, input: FlightInput, dt: number) {
 
   craft.x += Math.sin(craft.heading) * craft.speed * dt
   craft.z -= Math.cos(craft.heading) * craft.speed * dt
-  // Leave open water at the edge while the ocean wrapping system is pending.
-  if (Math.abs(craft.x) > WORLD_HALF || Math.abs(craft.z) > WORLD_HALF) {
-    craft.x = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, craft.x))
-    craft.z = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, craft.z))
-    craft.speed = 0
-  }
+  const x = wrapCoordinate(craft.x)
+  const z = wrapCoordinate(craft.z)
+  const shift = { x: x - craft.x, z: z - craft.z }
+  craft.x = x
+  craft.z = z
+  return shift
 }

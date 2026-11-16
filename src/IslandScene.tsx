@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
-import { BufferAttribute, BufferGeometry, Color, DoubleSide, PlaneGeometry, ShaderMaterial } from 'three'
-import { BEACONS, CAUSEWAY, DOCK, isLit, surfaceHeight, terrainHeight, type Point, type Survey } from './island'
+import { useMemo } from 'react'
+import { BufferAttribute, BufferGeometry, Color, DoubleSide, PlaneGeometry } from 'three'
+import { BEACONS, CAUSEWAY, CELL_SIZE, DOCK, isLit, surfaceHeight, terrainHeight, type Point, type Survey } from './island'
 
 const stone = new Color('#50425f')
 const grass = new Color('#395355')
@@ -10,7 +10,7 @@ const deep = new Color('#17264b')
 const teal = new Color('#54bba9')
 
 function landscapeGeometry(ocean: boolean) {
-  const size = ocean ? 1800 : 1040
+  const size = ocean ? CELL_SIZE : 1040
   const segments = ocean ? 160 : 192
   const geometry = new PlaneGeometry(size, size, segments, segments).rotateX(-Math.PI / 2)
   const positions = geometry.attributes.position
@@ -36,13 +36,12 @@ function landscapeGeometry(ocean: boolean) {
   return geometry
 }
 
-function Ocean({ reducedMotion }: { reducedMotion: boolean }) {
-  const geometry = useMemo(() => landscapeGeometry(true), [])
-  const material = useRef<ShaderMaterial>(null)
-  const uniforms = useMemo(() => ({ time: { value: 0 } }), [])
-  useFrame((_, dt) => { if (!reducedMotion) uniforms.time.value += Math.min(.1, dt) })
+function Ocean({ geometry, uniforms }: {
+  geometry: PlaneGeometry
+  uniforms: { time: { value: number } }
+}) {
   return <mesh geometry={geometry}>
-    <shaderMaterial ref={material} uniforms={uniforms} vertexColors
+    <shaderMaterial uniforms={uniforms} vertexColors
       vertexShader={`
         varying vec2 water;
         varying vec3 tint;
@@ -61,8 +60,10 @@ function Ocean({ reducedMotion }: { reducedMotion: boolean }) {
         varying vec3 tint;
         varying float range;
         void main() {
-          float swell = sin(water.x*.17 + water.y*.31 + time*.9)
-            * sin(water.x*.04 - water.y*.24 - time*.52);
+          // Integer cycles over each tile keep the wave phase continuous.
+          vec2 phase = water * (6.28318530718 / ${CELL_SIZE}.0);
+          float swell = sin(dot(phase, vec2(43., 79.)) + time*.9)
+            * sin(dot(phase, vec2(10., -61.)) - time*.52);
           float glint = smoothstep(.72,.99,swell) * .046;
           vec3 base = tint * (.95 + swell*.09) + vec3(glint*.5,glint,glint);
           vec3 haze = vec3(.31,.22,.33);
@@ -151,7 +152,7 @@ function Landmark({ index, lit }: { index: number; lit: boolean }) {
     </mesh>
     <mesh position-y={30}>
       <cylinderGeometry args={[.28, .71, 46, 8, 1, true]} />
-      <meshBasicMaterial color={lamp} transparent opacity={lit ? .42 : .25} depthWrite={false} fog={false} />
+      <meshBasicMaterial color={lamp} transparent opacity={lit ? .42 : .25} depthWrite={false} />
     </mesh>
     {index === 0 && <group position={[-10, 0, -9]}>
       <mesh position-y={6}><cylinderGeometry args={[2.3, 3.5, 12, 6]} /><meshStandardMaterial color="#74606b" /></mesh>
@@ -183,15 +184,23 @@ function Landmark({ index, lit }: { index: number; lit: boolean }) {
   </group>
 }
 
+const tileOffsets = [-CELL_SIZE, 0, CELL_SIZE]
+
 export function IslandScene({ survey, reducedMotion }: { survey: Survey; reducedMotion: boolean }) {
   const terrain = useMemo(() => landscapeGeometry(false), [])
   const paths = useMemo(trailGeometry, [])
-  return <>
-    <mesh geometry={terrain}><meshStandardMaterial vertexColors roughness={.93} flatShading /></mesh>
-    <Ocean reducedMotion={reducedMotion} />
-    <mesh geometry={paths}><meshStandardMaterial color="#968887" roughness={.91} side={DoubleSide} /></mesh>
-    <Dock />
-    <Causeway />
-    {BEACONS.map((beacon, index) => <Landmark key={beacon.id} index={index} lit={isLit(survey, index)} />)}
-  </>
+  const water = useMemo(() => landscapeGeometry(true), [])
+  const uniforms = useMemo(() => ({ time: { value: 0 } }), [])
+  useFrame((_, dt) => { if (!reducedMotion) uniforms.time.value += Math.min(.1, dt) })
+
+  return <>{tileOffsets.flatMap(x => tileOffsets.map(z => (
+    <group key={`${x}:${z}`} position={[x, 0, z]}>
+      <mesh geometry={terrain}><meshStandardMaterial vertexColors roughness={.93} flatShading /></mesh>
+      <Ocean geometry={water} uniforms={uniforms} />
+      <mesh geometry={paths}><meshStandardMaterial color="#968887" roughness={.91} side={DoubleSide} /></mesh>
+      <Dock />
+      <Causeway />
+      {BEACONS.map((beacon, index) => <Landmark key={beacon.id} index={index} lit={isLit(survey, index)} />)}
+    </group>
+  )))}</>
 }

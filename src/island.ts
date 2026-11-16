@@ -1,6 +1,13 @@
 export type Point = { x: number; z: number }
 
 export const WORLD_HALF = 500
+export const OCEAN_MARGIN = 300
+export const CELL_HALF = WORLD_HALF + OCEAN_MARGIN
+export const CELL_SIZE = CELL_HALF * 2
+
+export function wrapCoordinate(value: number) {
+  return value - Math.floor((value + CELL_HALF) / CELL_SIZE) * CELL_SIZE
+}
 export const WATER_LEVEL = 0
 export const DOCK = { x: -326, z: 246, name: 'Arrival Dock' }
 export const CAUSEWAY = { x: 40, z: 30, name: 'Central Causeway' }
@@ -20,7 +27,7 @@ export type Survey = { beacons: number; complete: boolean }
 export const freshSurvey = (): Survey => ({ beacons: 0, complete: false })
 
 export function distance(a: Point, b: Point) {
-  return Math.hypot(a.x - b.x, a.z - b.z)
+  return Math.hypot(wrapCoordinate(a.x - b.x), wrapCoordinate(a.z - b.z))
 }
 
 export function isLit(survey: Survey, index: number) {
@@ -62,5 +69,5 @@ export function terrainHeight(x: number, z: number) {
 }
 
 export function surfaceHeight(x: number, z: number) {
-  return Math.max(WATER_LEVEL, terrainHeight(x, z))
+  return Math.max(WATER_LEVEL, terrainHeight(wrapCoordinate(x), wrapCoordinate(z)))
 }

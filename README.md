@@ -6,7 +6,7 @@ A browser exploration game, beginning with a 1 × 1 km alien island, a hovercraf
 
 ## Current status
 
-**Phase 3 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
+**Phase 4 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
 
 Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, controls, ocean wrapping, hazards, respawn rules, architecture, and acceptance checks.
 
@@ -20,7 +20,7 @@ Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, 
 - Restart at the dock, with run progress reset, after hitting a danger.
 - Use desktop or touch controls with adjustable graphics and optional sound.
 
-The island and beacon survey are available now. Ocean wrapping and hazards follow in Phases 4 and 5.
+The island, beacon survey, and repeating ocean are available now. Phase 5 adds hazards.
 
 ## Development roadmap
 
@@ -29,7 +29,7 @@ The island and beacon survey are available now. Ocean wrapping and hazards follo
 | 1 | Game design and first-release scope | Complete |
 | 2 | Application, hovercraft controls, and camera | Complete |
 | 3 | Island, ocean, landmarks, and beacons | Complete |
-| 4 | Seamless repeating world | Planned |
+| 4 | Seamless repeating world | Complete |
 | 5 | Hazards, restart, and completion | Planned |
 | 6 | Visual polish, mobile support, and QA | Planned |
 | 7 | Verified production publication | Planned |
@@ -60,13 +60,13 @@ Open the local URL printed by Vite and select **Start flight**. The game require
 
 Phase 2 uses React, TypeScript, Vite, Three.js, and React Three Fiber. The flight simulation runs at a fixed time step and is separate from input handling and scene rendering.
 
-`pnpm build` runs TypeScript checks and creates the production bundle. Phase 3 was checked in the browser for rendering, flight, and beacon progress. A flight simulation check covered reaching all three beacons, rejecting out-of-range and duplicate activation, and completing the survey at the dock. Physical phone testing is pending.
+`pnpm build` runs TypeScript checks and creates the production bundle. Phase 3 was checked in the browser for rendering, flight, and beacon progress. A flight simulation check covered reaching all three beacons, rejecting out-of-range and duplicate activation, and completing the survey at the dock. Phase 4 rendered in the browser. Simulation checks covered all edges and diagonal corners, camera-relative position across a rebase, 50 consecutive crossings, and shared beacon and dock state. Physical phone testing is pending.
 
-The minimap is schematic. The heading arrow and distance point to the next unlit beacon, or to a nearby beacon you can activate. Beacons can be visited in any order. After all three are active, fly within 32 m of Arrival Dock to finish. The Phase 3 map stops at its boundary until ocean wrapping is added.
+The minimap is schematic. The heading arrow and distance point to the next unlit beacon, or to a nearby beacon you can activate. Beacons can be visited in any order. After all three are active, fly within 32 m of Arrival Dock to finish. Travel in any direction to loop through the surrounding ocean. The 1 km region has a 300 m ocean margin on each side, so the full repeat distance is 1.6 km. Nearby island copies share beacon and dock state. The minimap position wraps at the cell edge.
 
 ## Vercel
 
-[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 3 island runs locally.
+[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 4 island runs locally.
 
 ## References
 

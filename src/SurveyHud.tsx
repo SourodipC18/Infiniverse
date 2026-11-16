@@ -1,7 +1,7 @@
-import { BEACONS, CAUSEWAY, DOCK, WORLD_HALF, distance, isLit, nearbyBeacon, type Point, type Survey } from './island'
+import { BEACONS, CAUSEWAY, DOCK, CELL_HALF, distance, isLit, nearbyBeacon, wrapCoordinate, type Point, type Survey } from './island'
 
 function mapPosition(point: Point) {
-  const percent = (coordinate: number) => ((coordinate + WORLD_HALF) / (2 * WORLD_HALF)) * 100 + '%'
+  const percent = (coordinate: number) => ((coordinate + CELL_HALF) / (2 * CELL_HALF)) * 100 + '%'
   return { left: percent(point.x), top: percent(point.z) }
 }
 
@@ -15,7 +15,7 @@ export function SurveyHud({ survey, position, heading, activate }: {
   const nearby = nearbyBeacon(survey, position)
   const next = nearby >= 0 ? nearby : BEACONS.findIndex((_, i) => !isLit(survey, i))
   const target = next < 0 ? DOCK : BEACONS[next]
-  const angle = Math.atan2(target.x - position.x, position.z - target.z) - heading
+  const angle = Math.atan2(wrapCoordinate(target.x - position.x), wrapCoordinate(position.z - target.z)) - heading
 
   return <aside className="survey" aria-label="Island survey">
     <div className="survey-data">

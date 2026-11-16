@@ -22,6 +22,8 @@ void main() {
 }`
 
 function Sky() {
+  const backdrop = useRef<Group>(null)
+  useFrame(({ camera }) => { backdrop.current?.position.copy(camera.position) })
   const stars = useMemo(() => {
     let state = 843
     const random = () => {
@@ -40,8 +42,9 @@ function Sky() {
     <fog attach="fog" args={['#77627f', 105, 820]} />
     <hemisphereLight args={['#c9ccff', '#383148', 2.35]} />
     <directionalLight position={[-35, 32, -22]} color="#ffd0a4" intensity={3.1} />
+    <group ref={backdrop}>
     <mesh>
-      <sphereGeometry args={[1500, 40, 24]} />
+      <sphereGeometry args={[1150, 40, 24]} />
       <shaderMaterial vertexShader={skyVertex} fragmentShader={skyFragment} side={BackSide} depthWrite={false} />
     </mesh>
     <points>
@@ -50,6 +53,7 @@ function Sky() {
       </bufferGeometry>
       <pointsMaterial color="#e4ddfa" size={1.25} transparent opacity={.7} fog={false} />
     </points>
+    </group>
   </>
 }
 
@@ -114,7 +118,11 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
     if (!input.paused) {
       accumulator.current += Math.min(delta, .1)
       while (accumulator.current >= FIXED_STEP) {
-        stepCraft(state, input, FIXED_STEP)
+        const shift = stepCraft(state, input, FIXED_STEP)
+        camera.position.x += shift.x
+        camera.position.z += shift.z
+        vectors.smoothedLook.x += shift.x
+        vectors.smoothedLook.z += shift.z
         accumulator.current -= FIXED_STEP
       }
       const next = updateSurvey(run.current, state, input.activate)
@@ -156,7 +164,7 @@ export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
       onTelemetry(Math.round(state.speed * 3.6), state.x, state.z, state.heading)
       timer.current = 0
     }
-  })
+  }, -1)
 
   return <>
     <Sky />

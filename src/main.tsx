@@ -164,7 +164,7 @@ function Game() {
       onPointerDown={pointerStart} onPointerMove={pointerMove} onPointerUp={releasePointer}
       onPointerCancel={releasePointer} onLostPointerCapture={releasePointer}>
       {webgl && <SceneBoundary>
-        <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 1900 }}
+        <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 1300 }}
           dpr={[1, 1.65]} gl={{ antialias: true }}>
           <Range input={input} onTelemetry={report} onSurvey={setSurvey} survey={survey} reducedMotion={!motion} />
         </Canvas>
@@ -182,7 +182,7 @@ function Game() {
     </header>
 
     {(!webgl || mode !== 'driving') && <section className="intro" aria-labelledby="screen-title">
-      <p className="region">Phase 3 · Island survey</p>
+      <p className="region">Phase 4 · Open ocean</p>
       <h1 id="screen-title">{mode === 'paused' ? 'Flight paused' : 'Twilight Island'}</h1>
       {webgl ? <>
         <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Follow the trails to three beacons, activate each one, then bring the hovercraft back to the dock.'}</p>

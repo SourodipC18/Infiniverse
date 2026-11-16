@@ -87,7 +87,7 @@ kbd { font-family: 'IBM Plex Mono', monospace; border: 1px solid #e1d8f457; bord
     repeating-linear-gradient(90deg, transparent 0 24%, #a1c5c322 24% 25%), #151b32de;
 }
 .survey-map i { position: absolute; display: block; translate: -50% -50%; }
-.survey-map .map-land { width: 77%; height: 70%; left: 50%; top: 50%; border-radius: 45% 53% 47% 50%; background: #5288816e; }
+.survey-map .map-land { width: 48%; height: 44%; left: 50%; top: 50%; border-radius: 45% 53% 47% 50%; background: #5288816e; }
 .north { position: absolute; top: .24rem; left: .35rem; color: #d4c6de; font: .68rem monospace; }
 .map-causeway { background: #a8c9c5; width: 4px; height: 4px; }
 .map-dock { background: #67e5eb; width: 6px; height: 6px; border-radius: 1px; }
