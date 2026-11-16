@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import { BackSide, Group, MathUtils, Vector3 } from 'three'
-import { FIXED_STEP, spawn, stepCraft, type FlightInput } from './flight'
+import { BOOST_SPEED, FIXED_STEP, spawn, stepCraft, type FlightInput } from './flight'
 import { freshSurvey, surfaceHeight, updateSurvey, type Survey } from './island'
 import { ThrusterTrails } from './FlightEffects'
 import { IslandScene } from './IslandScene'
@@ -191,7 +191,7 @@ export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedM
     const bob = reducedMotion || input.paused || input.recovering ? 0 : Math.sin(clock.elapsedTime * 2.8) * .075
     const height = surfaceHeight(state.x, state.z)
     craftMesh.current.position.set(state.x, height + .79 + bob, state.z)
-    craftMesh.current.rotation.set(0, -state.heading, reducedMotion ? 0 : -state.steering * state.speed * .009)
+    craftMesh.current.rotation.set(0, -state.heading, reducedMotion ? 0 : -state.steering * MathUtils.clamp(state.speed * .009, -.25, .25))
 
     const angle = state.heading + input.orbit
     const groundDistance = input.distance * Math.cos(input.pitch)
@@ -206,8 +206,9 @@ export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedM
       camera.position.copy(vectors.position)
       vectors.smoothedLook.copy(vectors.lookTarget)
     } else {
-      camera.position.lerp(vectors.position, 1 - Math.exp(-8 * delta))
-      vectors.smoothedLook.lerp(vectors.lookTarget, 1 - Math.exp(-10 * delta))
+      const tracking = 8 + 10 * Math.abs(state.speed) / BOOST_SPEED
+      camera.position.lerp(vectors.position, 1 - Math.exp(-tracking * delta))
+      vectors.smoothedLook.lerp(vectors.lookTarget, 1 - Math.exp(-(tracking + 2) * delta))
     }
     camera.position.y = Math.max(camera.position.y, surfaceHeight(camera.position.x, camera.position.z) + 1.2)
     camera.lookAt(vectors.smoothedLook)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { BOOST_LIMIT_KMH } from './flight'
 
 type Engine = { context: AudioContext; rotor: OscillatorNode; volume: GainNode }
 
@@ -33,7 +34,7 @@ export function useFlightAudio(speed: number, active: boolean) {
   useEffect(() => {
     if (!engine.current) return
     const { context, volume, rotor } = engine.current
-    const throttle = Math.min(Math.abs(speed) / 79, 1)
+    const throttle = Math.sqrt(Math.min(Math.abs(speed) / BOOST_LIMIT_KMH, 1))
     volume.gain.setTargetAtTime(enabled && active ? .014 + throttle * .031 : 0, context.currentTime, .12)
     rotor.frequency.setTargetAtTime(48 + throttle * 91, context.currentTime, .12)
   }, [speed, active, enabled])

@@ -50,7 +50,7 @@ Open the local URL printed by Vite and select **Start flight**. The game require
 | Control | Action |
 | --- | --- |
 | WASD or arrow keys | Accelerate, brake, reverse, and steer |
-| Hold Shift or the ⚡ touch button | Accelerate and hold up to 79 km/h |
+| Hold Shift or the ⚡ touch button | Keep accelerating up to 500 km/h while held |
 | Drag the scene | Orbit the chase camera |
 | Scroll or pinch | Adjust the camera distance |
 | E or Activate beacon | Activate a beacon within 24 m |

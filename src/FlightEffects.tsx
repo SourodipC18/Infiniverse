@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef, type RefObject } from 'react'
 import { AdditiveBlending, type Group } from 'three'
-import type { CraftState } from './flight'
+import { BOOST_SPEED, type CraftState } from './flight'
 
 export function ThrusterTrails({ craft, reducedMotion }: {
   craft: RefObject<CraftState>
@@ -13,7 +13,7 @@ export function ThrusterTrails({ craft, reducedMotion }: {
     const speed = Math.max(0, craft.current.speed)
     if (trails.current) {
       trails.current.visible = !reducedMotion && speed > .5
-      trails.current.scale.z = .45 + .55 * speed / 22
+      trails.current.scale.z = .45 + 1.25 * Math.min(1, speed / BOOST_SPEED)
     }
     uniforms.strength.value = Math.min(1, speed / 16)
   })

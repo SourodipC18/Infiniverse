@@ -1,5 +1,8 @@
 import { DOCK, wrapCoordinate } from "./island.ts"
 export const FIXED_STEP = 1 / 120
+export const CRUISE_SPEED = 12
+export const BOOST_LIMIT_KMH = 500
+export const BOOST_SPEED = BOOST_LIMIT_KMH / 3.6
 
 export type CraftState = {
   x: number
@@ -59,9 +62,9 @@ export function stepCraft(craft: CraftState, input: FlightInput, dt: number) {
   const boost = held(input, 'boost')
   const forward = boost || held(input, 'drive')
   const brake = held(input, 'brake')
-  const maxSpeed = boost ? 22 : 12
+  const maxSpeed = boost ? BOOST_SPEED : CRUISE_SPEED
   const target = brake ? -5 : forward ? maxSpeed : 0
-  const acceleration = brake ? 22 : forward ? 10 : 5
+  const acceleration = brake ? 22 : boost ? 12 : craft.speed > CRUISE_SPEED ? 18 : forward ? 10 : 5
   craft.speed = approach(craft.speed, target, acceleration * dt)
 
   const steer = Number(held(input, 'right')) - Number(held(input, 'left'))

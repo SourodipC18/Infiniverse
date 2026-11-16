@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { Component, useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MathUtils } from 'three'
-import { createInput, keyBindings } from './flight'
+import { CRUISE_SPEED, createInput, keyBindings } from './flight'
 import { Range, type HazardNotice } from './Range'
 import { HAZARDS } from './hazards'
 import { useFlightAudio } from './useFlightAudio'
@@ -228,7 +228,7 @@ function Game() {
 
     {webgl && <footer className="instruments">
       <div className="readout" aria-label="Flight telemetry">
-        <span className="readout-label">{telemetry.speed < 0 ? 'Reverse' : telemetry.speed > 44 ? 'Boost speed' : 'Speed'}</span>
+        <span className="readout-label">{telemetry.speed < 0 ? 'Reverse' : telemetry.speed > Math.round(CRUISE_SPEED * 3.6) ? 'Boost speed' : 'Speed'}</span>
         <div><output aria-label="Speed">{Math.abs(telemetry.speed)}</output> <span>km/h</span></div>
         <span className="coordinates" aria-label="Position">X {Math.round(telemetry.x)} · Z {Math.round(telemetry.z)}</span>
       </div>
