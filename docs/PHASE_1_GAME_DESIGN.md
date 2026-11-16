@@ -196,6 +196,4 @@ These references inform the design, not a promise that our first release matches
 
 ## 12. Hosting status
 
-A live Vercel URL has not been verified. The connected Vercel account rejected project inspection with HTTP 403 for the intended team, requiring team authorization. No deployment success or URL is assumed.
-
-Phase 1 is a design document. The first playable application starts in Phase 2. If an early Vercel preview is published before the playable build, it must be labelled as a design preview and must not claim gameplay is implemented.
+The [Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app) is deployed on Vercel and requires Vercel sign-in. The preview source is in [preview/index.html](../preview/index.html). The playable application starts in Phase 2.
