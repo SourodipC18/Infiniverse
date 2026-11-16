@@ -49,9 +49,8 @@ No gameplay, browser, or performance tests have been run yet. Performance goals 
 
 ## Vercel
 
-**Live URL: pending.**
+[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required.
 
-Vercel team authorization is required before the connected account can inspect or create the intended project. A verified deployment URL will be added here once available. Any early design preview will be labelled separately from the playable game.
 
 ## References
 
