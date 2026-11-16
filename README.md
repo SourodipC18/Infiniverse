@@ -6,7 +6,7 @@ A browser exploration game, beginning with a 1 × 1 km alien island, a hovercraf
 
 ## Current status
 
-**Phase 6 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
+**[Play Twilight Island on Vercel](https://infiniverse-saurodip-chowdhurys-projects.vercel.app).** Vercel sign-in is required. Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
 
 Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, controls, ocean wrapping, hazards, respawn rules, architecture, and acceptance checks.
 
@@ -32,11 +32,11 @@ The island survey now includes an offshore storm and an electrical field. A coll
 | 4 | Seamless repeating world | Complete |
 | 5 | Hazards, restart, and completion | Complete |
 | 6 | Visual polish, mobile support, and QA | Complete |
-| 7 | Verified production publication | Planned |
+| 7 | Verified production publication | Complete |
 
 The larger procedural universe and nested world zoom remain future expansions after this playable slice.
 
-## Run the prototype
+## Run the game locally
 
 Use Node.js 22.12 or newer and pnpm 11.25.
 
@@ -58,7 +58,7 @@ Open the local URL printed by Vite and select **Start flight**. The game require
 | Escape or Pause | Pause or resume flight |
 | On-screen hold buttons | Steer, accelerate, brake, and boost on touch screens |
 
-Phase 2 uses React, TypeScript, Vite, Three.js, and React Three Fiber. The flight simulation runs at a fixed time step and is separate from input handling and scene rendering.
+The game uses React, TypeScript, Vite, Three.js, and React Three Fiber. The flight simulation runs at a fixed time step and is separate from input handling and scene rendering.
 
 `pnpm build` runs TypeScript checks and creates the production bundle. Phase 3 was checked in the browser for rendering, flight, and beacon progress. A flight simulation check covered reaching all three beacons, rejecting out-of-range and duplicate activation, and completing the survey at the dock. Phase 4 rendered in the browser. Simulation checks covered all edges and diagonal corners, camera-relative position across a rebase, 50 consecutive crossings, and shared beacon and dock state. Physical phone testing is pending.
 
@@ -70,7 +70,7 @@ The minimap is schematic. The heading arrow and distance point to the next unlit
 
 ## Vercel
 
-[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 6 island runs locally.
+[Open the playable build](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The production build includes the 500 km/h boost update.
 
 ## References
 
