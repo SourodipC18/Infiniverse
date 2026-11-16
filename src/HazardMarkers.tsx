@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { useRef, type RefObject } from 'react'
-import { Group, type Group as GroupType } from 'three'
+import { type Group } from 'three'
 import { HAZARDS, hazardCenter, type HazardId } from './hazards'
 import { surfaceHeight } from './island'
 
@@ -9,13 +9,15 @@ export function HazardMarker({ id, elapsed, reducedMotion }: {
   elapsed: RefObject<number>
   reducedMotion: boolean
 }) {
-  const marker = useRef<GroupType>(null)
+  const marker = useRef<Group>(null)
   const clouds = useRef<Group>(null)
   const definition = HAZARDS[id]
   const radius = definition.dangerRadius
+  const arc = useRef<Group>(null)
   useFrame(() => {
     const { x, z } = hazardCenter(id, elapsed.current)
     marker.current?.position.set(x, surfaceHeight(x, z), z)
+    if (arc.current) arc.current.rotation.y = reducedMotion ? 0 : elapsed.current * .35
     if (clouds.current && !reducedMotion) clouds.current.rotation.y = elapsed.current * .09
   })
   const center = hazardCenter(id, 0)
@@ -46,10 +48,12 @@ export function HazardMarker({ id, elapsed, reducedMotion }: {
           <mesh position-y={3.18}><octahedronGeometry args={[.85]} /><meshBasicMaterial color={definition.color} /></mesh>
         </group>
       })}
-      <mesh position-y={5}>
-        <octahedronGeometry args={[2.8]} />
-        <meshBasicMaterial color={definition.color} wireframe />
-      </mesh>
+      <group ref={arc}>
+        {[2.8, 4.1].map((size, i) => <mesh key={size} position-y={5.6} rotation={[.4, i * .8, .25]}>
+          <octahedronGeometry args={[size]} />
+          <meshBasicMaterial color={definition.color} transparent opacity={i ? .35 : .8} wireframe />
+        </mesh>)}
+      </group>
     </>}
   </group>
 }

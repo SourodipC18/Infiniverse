@@ -56,9 +56,10 @@ function approach(value: number, target: number, maxChange: number) {
 }
 
 export function stepCraft(craft: CraftState, input: FlightInput, dt: number) {
-  const forward = held(input, 'drive')
+  const boost = held(input, 'boost')
+  const forward = boost || held(input, 'drive')
   const brake = held(input, 'brake')
-  const maxSpeed = held(input, 'boost') ? 22 : 12
+  const maxSpeed = boost ? 22 : 12
   const target = brake ? -5 : forward ? maxSpeed : 0
   const acceleration = brake ? 22 : forward ? 10 : 5
   craft.speed = approach(craft.speed, target, acceleration * dt)

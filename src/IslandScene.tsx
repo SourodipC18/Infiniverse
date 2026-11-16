@@ -1,14 +1,14 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, type RefObject } from 'react'
-import { BufferAttribute, BufferGeometry, Color, DoubleSide, PlaneGeometry } from 'three'
+import { useLayoutEffect, useMemo, useRef, type RefObject } from 'react'
+import { BufferAttribute, BufferGeometry, Color, DoubleSide, Object3D, PlaneGeometry, type InstancedMesh } from 'three'
 import { BEACONS, CAUSEWAY, CELL_SIZE, DOCK, isLit, surfaceHeight, terrainHeight, type Point, type Survey } from './island'
 
 import { HazardMarker } from './HazardMarkers'
 import { HAZARD_IDS } from './hazards'
 
 const stone = new Color('#50425f')
-const grass = new Color('#395355')
-const sand = new Color('#b39881')
+const grass = new Color('#427879')
+const sand = new Color('#bf9b88')
 const deep = new Color('#17264b')
 const teal = new Color('#54bba9')
 
@@ -19,12 +19,14 @@ function landscapeGeometry(ocean: boolean) {
   const positions = geometry.attributes.position
   const colors = new Float32Array(positions.count * 3)
   const color = new Color()
+  const depths = new Float32Array(positions.count)
   for (let index = 0; index < positions.count; index += 1) {
     const x = positions.getX(index)
     const z = positions.getZ(index)
     const h = terrainHeight(x, z)
     if (ocean) {
       positions.setY(index, .015)
+      depths[index] = h
       color.copy(deep).lerp(teal, Math.max(0, Math.min(1, (h + 10) / 11)))
     } else {
       positions.setY(index, h)
@@ -35,6 +37,7 @@ function landscapeGeometry(ocean: boolean) {
     color.toArray(colors, index * 3)
   }
   geometry.setAttribute('color', new BufferAttribute(colors, 3))
+  if (ocean) geometry.setAttribute('seabed', new BufferAttribute(depths, 1))
   geometry.computeVertexNormals()
   return geometry
 }
@@ -47,9 +50,12 @@ function Ocean({ geometry, uniforms }: {
     <shaderMaterial uniforms={uniforms} vertexColors
       vertexShader={`
         varying vec2 water;
+        varying float depth;
         varying vec3 tint;
         varying float range;
+        attribute float seabed;
         void main() {
+          depth = seabed;
           water = position.xz;
           tint = color;
           vec4 view = modelViewMatrix * vec4(position, 1.);
@@ -60,6 +66,7 @@ function Ocean({ geometry, uniforms }: {
       fragmentShader={`
         uniform float time;
         varying vec2 water;
+        varying float depth;
         varying vec3 tint;
         varying float range;
         void main() {
@@ -69,6 +76,10 @@ function Ocean({ geometry, uniforms }: {
             * sin(dot(phase, vec2(10., -61.)) - time*.52);
           float glint = smoothstep(.72,.99,swell) * .046;
           vec3 base = tint * (.95 + swell*.09) + vec3(glint*.5,glint,glint);
+          float ripples = sin(dot(phase, vec2(261., 91.)) - time*1.6);
+          float shore = 1. - smoothstep(.22, 2.6, abs(depth + .85 + swell*.5));
+          float foam = shore * smoothstep(-.3,.8,swell*.6+ripples*.4);
+          base += vec3(.25,.54,.52)*foam;
           vec3 haze = vec3(.31,.22,.33);
           gl_FragColor = vec4(mix(base, haze, smoothstep(125., 710., range)), 1.);
           #include <tonemapping_fragment>
@@ -187,9 +198,42 @@ function Landmark({ index, lit }: { index: number; lit: boolean }) {
   </group>
 }
 
+const rockPoints = Array.from({ length: 560 }, (_, i) => {
+  const x = 840 * (((i + 1) * .6180339887) % 1 - .5)
+  const z = 780 * (((i + 1) * .4142135623) % 1 - .5)
+  const y = terrainHeight(x, z)
+  return { x, y, z, angle: i * 2.4, scale: .28 + (i % 8) * .115 }
+}).filter(p => p.y > 2 && p.y < 35 &&
+  [DOCK, CAUSEWAY, ...BEACONS].every(site => Math.hypot(site.x - p.x, site.z - p.z) > 28))
+
+function Outcrops() {
+  const mesh = useRef<InstancedMesh>(null)
+  useLayoutEffect(() => {
+    if (!mesh.current) return
+    const transform = new Object3D()
+    const color = new Color()
+    rockPoints.forEach((p, i) => {
+      transform.position.set(p.x, p.y + .18, p.z)
+      transform.rotation.set(.17, p.angle, -.16)
+      transform.scale.set(p.scale, p.scale * (i % 4 === 0 ? 2.5 : 1.1), p.scale * 1.6)
+      transform.updateMatrix()
+      mesh.current?.setMatrixAt(i, transform.matrix)
+      mesh.current?.setColorAt(i, color.set(i % 3 === 0 ? '#66718b' : '#5c5372'))
+    })
+    mesh.current.instanceMatrix.needsUpdate = true
+    if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true
+    mesh.current.computeBoundingSphere()
+  }, [])
+
+  return <instancedMesh ref={mesh} args={[undefined, undefined, rockPoints.length]}>
+    <dodecahedronGeometry args={[1.4, 0]} />
+    <meshStandardMaterial roughness={.81} flatShading />
+  </instancedMesh>
+}
+
 const tileOffsets = [-CELL_SIZE, 0, CELL_SIZE]
 
-export function IslandScene({ survey, reducedMotion, elapsed }: { survey: Survey; reducedMotion: boolean; elapsed: RefObject<number> }) {
+export function IslandScene({ survey, reducedMotion, elapsed, detail }: { survey: Survey; reducedMotion: boolean; elapsed: RefObject<number>; detail: boolean }) {
   const terrain = useMemo(() => landscapeGeometry(false), [])
   const paths = useMemo(trailGeometry, [])
   const water = useMemo(() => landscapeGeometry(true), [])
@@ -201,6 +245,7 @@ export function IslandScene({ survey, reducedMotion, elapsed }: { survey: Survey
       <mesh geometry={terrain}><meshStandardMaterial vertexColors roughness={.93} flatShading /></mesh>
       <Ocean geometry={water} uniforms={uniforms} />
       <mesh geometry={paths}><meshStandardMaterial color="#968887" roughness={.91} side={DoubleSide} /></mesh>
+      {detail && <Outcrops />}
       <Dock />
       <Causeway />
       {HAZARD_IDS.map(id => <HazardMarker key={id} id={id} elapsed={elapsed} reducedMotion={reducedMotion} />)}

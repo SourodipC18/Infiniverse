@@ -3,6 +3,7 @@ import { useMemo, useRef } from 'react'
 import { BackSide, Group, MathUtils, Vector3 } from 'three'
 import { FIXED_STEP, spawn, stepCraft, type FlightInput } from './flight'
 import { freshSurvey, surfaceHeight, updateSurvey, type Survey } from './island'
+import { ThrusterTrails } from './FlightEffects'
 import { IslandScene } from './IslandScene'
 import { hazardAt, RECOVERY_SECONDS, type HazardId } from './hazards'
 
@@ -21,6 +22,12 @@ void main() {
   vec3 color = mix(vec3(.39,.25,.40), vec3(.033,.027,.083), smoothstep(-.05,.55,ray.y));
   float sunset = pow(max(dot(ray, normalize(vec3(-.75,.07,-.6))), 0.), 12.);
   color += vec3(.48,.21,.10) * sunset * exp(-abs(ray.y-.07)*5.);
+  vec3 moon = normalize(vec3(.44,.125,-1.));
+  float moonAngle = length(ray - moon);
+  color += vec3(.29,.56,.60) * exp(-moonAngle * 18.) * .5;
+  color = mix(color, vec3(.87,.99,.94), 1. - smoothstep(.024,.026,moonAngle));
+  float ribbon = exp(-abs(ray.y - .27 - .08*sin(8.*ray.x))*14.);
+  color += vec3(.065,.21,.19)*ribbon*max(0., -ray.z);
   gl_FragColor = vec4(color, 1.);
 }`
 
@@ -42,8 +49,8 @@ function Sky() {
   }, [])
 
   return <>
-    <fog attach="fog" args={['#77627f', 105, 820]} />
-    <hemisphereLight args={['#c9ccff', '#383148', 2.35]} />
+    <fog attach="fog" args={['#776784', 190, 875]} />
+    <hemisphereLight args={['#b9d8ff', '#523655', 2.2]} />
     <directionalLight position={[-35, 32, -22]} color="#ffd0a4" intensity={3.1} />
     <group ref={backdrop}>
     <mesh>
@@ -89,13 +96,14 @@ function Hovercraft() {
   </>
 }
 
-export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedMotion }: {
+export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedMotion, detail }: {
   input: FlightInput
   onTelemetry: (speed: number, x: number, z: number, heading: number) => void
   onSurvey: (survey: Survey) => void
   onHazard: (notice: HazardNotice) => void
   survey: Survey
   reducedMotion: boolean
+  detail: boolean
 }) {
   const craftMesh = useRef<Group>(null)
   const craft = useRef(spawn())
@@ -193,7 +201,7 @@ export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedM
       state.z + Math.cos(angle) * groundDistance,
     )
     vectors.position.y = Math.max(vectors.position.y, surfaceHeight(vectors.position.x, vectors.position.z) + 1.2)
-    vectors.lookTarget.set(state.x + 2 * Math.sin(state.heading), height + 1.06, state.z - 2 * Math.cos(state.heading))
+    vectors.lookTarget.set(state.x + 4 * Math.sin(state.heading), height + 1.45, state.z - 4 * Math.cos(state.heading))
     if (resetting) {
       camera.position.copy(vectors.position)
       vectors.smoothedLook.copy(vectors.lookTarget)
@@ -213,9 +221,10 @@ export function Range({ input, onTelemetry, onSurvey, onHazard, survey, reducedM
 
   return <>
     <Sky />
-    <IslandScene survey={survey} reducedMotion={reducedMotion} elapsed={elapsed} />
+    <IslandScene survey={survey} reducedMotion={reducedMotion} elapsed={elapsed} detail={detail} />
     <group ref={craftMesh}>
       <Hovercraft />
+      {detail && <ThrusterTrails craft={craft} reducedMotion={reducedMotion} />}
     </group>
   </>
 }

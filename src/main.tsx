@@ -5,9 +5,12 @@ import { MathUtils } from 'three'
 import { createInput, keyBindings } from './flight'
 import { Range, type HazardNotice } from './Range'
 import { HAZARDS } from './hazards'
+import { useFlightAudio } from './useFlightAudio'
 import { DOCK, freshSurvey } from './island'
 import { SurveyHud } from './SurveyHud'
 import './style.css'
+
+type Quality = 'auto' | 'low' | 'medium' | 'high'
 
 type Mode = 'ready' | 'driving' | 'paused'
 
@@ -32,6 +35,11 @@ function Game() {
   const [telemetry, setTelemetry] = useState({ speed: 0, x: DOCK.x, z: DOCK.z, heading: .28 })
   const [survey, setSurvey] = useState(freshSurvey)
   const [hazard, setHazard] = useState<HazardNotice>(null)
+  const [quality, setQuality] = useState<Quality>('auto')
+  const compact = matchMedia('(pointer: coarse)').matches
+  const tier = quality === 'auto' ? (compact ? 'low' : 'high') : quality
+  const dpr = tier === 'low' ? 1 : tier === 'medium' ? 1.25 : 1.65
+  const audio = useFlightAudio(telemetry.speed, mode === 'driving' && !hazard?.failed)
   const [webgl] = useState(() => {
     try {
       const context = document.createElement('canvas').getContext('webgl2')
@@ -168,14 +176,17 @@ function Game() {
       onPointerCancel={releasePointer} onLostPointerCapture={releasePointer}>
       {webgl && <SceneBoundary>
         <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 1300 }}
-          dpr={[1, 1.65]} gl={{ antialias: true }}>
-          <Range input={input} onTelemetry={report} onSurvey={setSurvey} onHazard={setHazard} survey={survey} reducedMotion={!motion} />
+          dpr={[1, dpr]} gl={{ antialias: true }}>
+          <Range input={input} onTelemetry={report} onSurvey={setSurvey} onHazard={setHazard} survey={survey} reducedMotion={!motion} detail={tier !== 'low'} />
         </Canvas>
       </SceneBoundary>}
     </div>
 
     <header className="hud">
       <div className="brand"><span aria-hidden="true" className="mark">✦</span><span>INFINIVERSE</span></div>
+      {webgl && <button className="sound-button" type="button" aria-pressed={audio.enabled} onClick={() => void audio.toggle()}>
+        {audio.enabled ? 'Sound on' : 'Sound off'}
+      </button>}
       {webgl && mode !== 'ready' && <div className="hud-actions">
         <button type="button" onClick={reset}>Reset</button>
         <button type="button" onClick={() => transition(mode === 'driving' ? 'paused' : 'driving')}>
@@ -185,10 +196,17 @@ function Game() {
     </header>
 
     {(!webgl || mode !== 'driving') && <section className="intro" aria-labelledby="screen-title">
-      <p className="region">Phase 5 · Island survey</p>
+      <p className="region">Phase 6 · Island survey</p>
       <h1 id="screen-title">{mode === 'paused' ? 'Flight paused' : 'Twilight Island'}</h1>
       {webgl ? <>
         <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Activate three beacons and return to Arrival Dock. Give the offshore storm and the electrical field a wide berth.'}</p>
+        <div className="flight-settings">
+          <label>Graphics <select value={quality} onChange={event => setQuality(event.target.value as Quality)}>
+            <option value="auto">Auto</option><option value="low">Low</option>
+            <option value="medium">Medium</option><option value="high">High</option>
+          </select></label>
+          <label><input type="checkbox" checked={!motion} onChange={event => setMotion(!event.target.checked)} /> Reduce motion</label>
+        </div>
         <button type="button" className="primary" onClick={() => transition('driving')}>
           {mode === 'paused' ? 'Resume flight' : 'Start flight'} <span aria-hidden="true">→</span>
         </button>
@@ -210,14 +228,14 @@ function Game() {
 
     {webgl && <footer className="instruments">
       <div className="readout" aria-label="Flight telemetry">
-        <span className="readout-label">{telemetry.speed < 0 ? 'Reverse' : 'Speed'}</span>
+        <span className="readout-label">{telemetry.speed < 0 ? 'Reverse' : telemetry.speed > 44 ? 'Boost speed' : 'Speed'}</span>
         <div><output aria-label="Speed">{Math.abs(telemetry.speed)}</output> <span>km/h</span></div>
         <span className="coordinates" aria-label="Position">X {Math.round(telemetry.x)} · Z {Math.round(telemetry.z)}</span>
       </div>
       <p className="keyboard"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Fly
         <span><kbd>Shift</kbd> Boost</span><span>Drag to orbit · Scroll to zoom</span>
       </p>
-      <p className="touch-hint">Hold ↑ to fly · Drag to orbit · Pinch to zoom</p>
+      <p className="touch-hint">Hold ↑ to fly or ⚡ to boost</p>
     </footer>}
   </main>
 }
