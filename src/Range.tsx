@@ -1,7 +1,9 @@
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
-import { Group, MathUtils, Vector3 } from 'three'
-import { FIXED_STEP, RANGE_RADIUS, spawn, stepCraft, type FlightInput } from './flight'
+import { BackSide, Group, MathUtils, Vector3 } from 'three'
+import { FIXED_STEP, spawn, stepCraft, type FlightInput } from './flight'
+import { freshSurvey, surfaceHeight, updateSurvey, type Survey } from './island'
+import { IslandScene } from './IslandScene'
 
 const skyVertex = `
 varying vec3 direction;
@@ -19,7 +21,7 @@ void main() {
   gl_FragColor = vec4(color, 1.);
 }`
 
-function Landscape() {
+function Sky() {
   const stars = useMemo(() => {
     let state = 843
     const random = () => {
@@ -30,71 +32,24 @@ function Landscape() {
       const angle = random() * Math.PI * 2
       const y = .16 + random() * .83
       const radius = Math.sqrt(1 - y * y)
-      return [Math.cos(angle) * radius * 360, y * 360, Math.sin(angle) * radius * 360]
+      return [Math.cos(angle) * radius * 1080, y * 1080, Math.sin(angle) * radius * 1080]
     }).flat())
   }, [])
 
   return <>
-    <fog attach="fog" args={['#736182', 75, 250]} />
+    <fog attach="fog" args={['#77627f', 105, 820]} />
     <hemisphereLight args={['#c9ccff', '#383148', 2.35]} />
     <directionalLight position={[-35, 32, -22]} color="#ffd0a4" intensity={3.1} />
     <mesh>
-      <sphereGeometry args={[450, 40, 24]} />
-      <shaderMaterial vertexShader={skyVertex} fragmentShader={skyFragment} side={1} depthWrite={false} />
+      <sphereGeometry args={[1500, 40, 24]} />
+      <shaderMaterial vertexShader={skyVertex} fragmentShader={skyFragment} side={BackSide} depthWrite={false} />
     </mesh>
     <points>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[stars, 3]} />
       </bufferGeometry>
-      <pointsMaterial color="#e4ddfa" size={.62} transparent opacity={.7} fog={false} />
+      <pointsMaterial color="#e4ddfa" size={1.25} transparent opacity={.7} fog={false} />
     </points>
-    <mesh rotation-x={-Math.PI / 2} position-y={-.1}>
-      <planeGeometry args={[700, 700]} />
-      <meshStandardMaterial color="#202237" roughness={.94} />
-    </mesh>
-    <gridHelper args={[216, 36, '#66668e', '#343650']} position-y={-.06} />
-    <mesh rotation-x={-Math.PI / 2} position-y={-.02}>
-      <ringGeometry args={[RANGE_RADIUS - .18, RANGE_RADIUS, 128]} />
-      <meshBasicMaterial color="#ae83ce" transparent opacity={.66} />
-    </mesh>
-    <mesh rotation-x={-Math.PI / 2} position={[0, -.025, 17]}>
-      <ringGeometry args={[4.8, 5, 72]} />
-      <meshBasicMaterial color="#83f7df" />
-    </mesh>
-    {Array.from({ length: 14 }, (_, index) => (
-      <mesh key={index} position={[0, -.025, 9 - 3.9 * index]}>
-        <boxGeometry args={[.16, .035, 1.65]} />
-        <meshBasicMaterial color="#6aabac" />
-      </mesh>
-    ))}
-    {[-8, 8].map(x => (
-      <group key={x} position={[x, 0, -37]}>
-        <mesh position-y={4.5}>
-          <boxGeometry args={[1.3, 9, 1.9]} />
-          <meshStandardMaterial color="#333349" metalness={.4} roughness={.42} />
-        </mesh>
-        <mesh position={[0, 6, 1.01]}>
-          <boxGeometry args={[.2, 4.3, .07]} />
-          <meshBasicMaterial color="#ffd491" />
-        </mesh>
-      </group>
-    ))}
-    <mesh position={[0, 9.1, -37]}>
-      <boxGeometry args={[17, .9, 1.5]} />
-      <meshStandardMaterial color="#45415d" metalness={.4} roughness={.5} />
-    </mesh>
-    {Array.from({ length: 23 }, (_, index) => {
-      const angle = index * Math.PI * 2 / 23
-      const radius = 112 + index % 4 * 9
-      const height = 6 + (index * 11 % 17)
-      return (
-        <mesh key={index} position={[radius * Math.cos(angle), height * .21, radius * Math.sin(angle)]}
-          rotation={[.23, angle, -.22]} scale={[1.12, 1, .71]}>
-          <dodecahedronGeometry args={[height]} />
-          <meshStandardMaterial color={index % 3 === 0 ? '#4c3b5b' : '#35304a'} flatShading />
-        </mesh>
-      )
-    })}
   </>
 }
 
@@ -127,13 +82,16 @@ function Hovercraft() {
   </>
 }
 
-export function Range({ input, onTelemetry, reducedMotion }: {
+export function Range({ input, onTelemetry, onSurvey, survey, reducedMotion }: {
   input: FlightInput
-  onTelemetry: (speed: number, x: number, z: number) => void
+  onTelemetry: (speed: number, x: number, z: number, heading: number) => void
+  onSurvey: (survey: Survey) => void
+  survey: Survey
   reducedMotion: boolean
 }) {
   const craftMesh = useRef<Group>(null)
   const craft = useRef(spawn())
+  const run = useRef(freshSurvey())
   const viewedReset = useRef(-1)
   const accumulator = useRef(0)
   const timer = useRef(0)
@@ -148,6 +106,8 @@ export function Range({ input, onTelemetry, reducedMotion }: {
       viewedReset.current = input.reset
       craft.current = spawn()
       accumulator.current = 0
+      run.current = freshSurvey()
+      onSurvey(run.current)
     }
 
     const state = craft.current
@@ -157,22 +117,30 @@ export function Range({ input, onTelemetry, reducedMotion }: {
         stepCraft(state, input, FIXED_STEP)
         accumulator.current -= FIXED_STEP
       }
+      const next = updateSurvey(run.current, state, input.activate)
+      input.activate = false
+      if (next !== run.current) {
+        run.current = next
+        onSurvey(next)
+      }
       if (performance.now() > input.orbitUntil && Math.abs(state.speed) > .2) {
         input.orbit = MathUtils.damp(input.orbit, 0, 2.6, delta)
       }
     }
     const bob = reducedMotion || input.paused ? 0 : Math.sin(clock.elapsedTime * 2.8) * .075
-    craftMesh.current.position.set(state.x, .79 + bob, state.z)
+    const height = surfaceHeight(state.x, state.z)
+    craftMesh.current.position.set(state.x, height + .79 + bob, state.z)
     craftMesh.current.rotation.set(0, -state.heading, reducedMotion ? 0 : -state.steering * state.speed * .009)
 
     const angle = state.heading + input.orbit
     const groundDistance = input.distance * Math.cos(input.pitch)
     vectors.position.set(
       state.x - Math.sin(angle) * groundDistance,
-      1.35 + input.distance * Math.sin(input.pitch),
+      height + 1.35 + input.distance * Math.sin(input.pitch),
       state.z + Math.cos(angle) * groundDistance,
     )
-    vectors.lookTarget.set(state.x + 2 * Math.sin(state.heading), 1.06, state.z - 2 * Math.cos(state.heading))
+    vectors.position.y = Math.max(vectors.position.y, surfaceHeight(vectors.position.x, vectors.position.z) + 1.2)
+    vectors.lookTarget.set(state.x + 2 * Math.sin(state.heading), height + 1.06, state.z - 2 * Math.cos(state.heading))
     if (resetting) {
       camera.position.copy(vectors.position)
       vectors.smoothedLook.copy(vectors.lookTarget)
@@ -180,17 +148,19 @@ export function Range({ input, onTelemetry, reducedMotion }: {
       camera.position.lerp(vectors.position, 1 - Math.exp(-8 * delta))
       vectors.smoothedLook.lerp(vectors.lookTarget, 1 - Math.exp(-10 * delta))
     }
+    camera.position.y = Math.max(camera.position.y, surfaceHeight(camera.position.x, camera.position.z) + 1.2)
     camera.lookAt(vectors.smoothedLook)
 
     timer.current += delta
     if (resetting || timer.current >= .1) {
-      onTelemetry(Math.round(state.speed * 3.6), Math.round(state.x), Math.round(state.z))
+      onTelemetry(Math.round(state.speed * 3.6), state.x, state.z, state.heading)
       timer.current = 0
     }
   })
 
   return <>
-    <Landscape />
+    <Sky />
+    <IslandScene survey={survey} reducedMotion={reducedMotion} />
     <group ref={craftMesh}>
       <Hovercraft />
     </group>

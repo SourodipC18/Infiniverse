@@ -62,3 +62,42 @@ kbd { font-family: 'IBM Plex Mono', monospace; border: 1px solid #e1d8f457; bord
   .intro p { margin: .35rem 0 .6rem; }
   .touch-controls { bottom: 4.9rem; }
 }
+
+.survey {
+  position: absolute; z-index: 2; top: calc(4.6rem + env(safe-area-inset-top));
+  right: clamp(.9rem, 4vw, 2.75rem); display: flex; align-items: flex-start; gap: .75rem;
+  color: #f5efe8; pointer-events: none;
+}
+.survey-data, .survey-map {
+  border: 1px solid #dcc5e846; border-radius: .55rem; background: #1b152cde;
+}
+.survey-data { padding: .7rem .8rem; display: grid; gap: .48rem; min-width: 9.5rem; }
+.survey-progress { color: #a3f9da; font-weight: 750; font-size: .84rem; }
+.survey-target { display: flex; align-items: center; gap: .47rem; font-size: .82rem; }
+.bearing { color: #ffd892; font-size: 1.16rem; text-align: center; width: 1.1rem; flex: none; }
+.survey-data small { display: block; margin-top: .12rem; color: #d4c6de; font-size: .72rem; }
+.activate {
+  pointer-events: auto; background: #9ff8df; color: #121e24; border: 0;
+  border-radius: .35rem; padding: .42rem .45rem; min-height: 44px; font-size: .8rem; font-weight: 750;
+}
+.activate kbd { color: inherit; border-color: #13352a66; margin-left: .2rem; }
+.survey-map {
+  width: 8rem; aspect-ratio: 1; position: relative; overflow: hidden;
+  background: repeating-linear-gradient(0deg, transparent 0 24%, #a1c5c322 24% 25%),
+    repeating-linear-gradient(90deg, transparent 0 24%, #a1c5c322 24% 25%), #151b32de;
+}
+.survey-map i { position: absolute; display: block; translate: -50% -50%; }
+.survey-map .map-land { width: 77%; height: 70%; left: 50%; top: 50%; border-radius: 45% 53% 47% 50%; background: #5288816e; }
+.north { position: absolute; top: .24rem; left: .35rem; color: #d4c6de; font: .68rem monospace; }
+.map-causeway { background: #a8c9c5; width: 4px; height: 4px; }
+.map-dock { background: #67e5eb; width: 6px; height: 6px; border-radius: 1px; }
+.map-beacon { width: 6px; height: 6px; border-radius: 50%; }
+.map-player { background: #fff; width: 10px; height: 11px; clip-path: polygon(50% 0%, 100% 100%, 50% 73%, 0% 100%); }
+@media (max-width: 650px) {
+  .survey { gap: .4rem; }
+  .survey-map { width: 5.2rem; }
+  .survey-data { padding: .48rem .57rem; min-width: auto; }
+}
+@media (max-height: 450px) and (pointer: coarse) {
+  .survey-map { display: none; }
+}

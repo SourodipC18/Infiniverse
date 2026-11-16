@@ -1,4 +1,4 @@
-export const RANGE_RADIUS = 95
+import { DOCK, WORLD_HALF } from "./island.ts"
 export const FIXED_STEP = 1 / 120
 
 export type CraftState = {
@@ -10,9 +10,9 @@ export type CraftState = {
 }
 
 export const spawn = (): CraftState => ({
-  x: 0,
-  z: 17,
-  heading: 0,
+  x: DOCK.x,
+  z: DOCK.z,
+  heading: .28,
   speed: 0,
   steering: 0,
 })
@@ -34,12 +34,13 @@ export type FlightInput = {
   orbitUntil: number
   paused: boolean
   reset: number
+  activate: boolean
 }
 
 export function createInput(): FlightInput {
   return {
     keys: new Set(), touches: new Map(), orbit: 0, pitch: .38,
-    distance: 11, orbitUntil: 0, paused: true, reset: 0,
+    distance: 11, orbitUntil: 0, paused: true, reset: 0, activate: false,
   }
 }
 
@@ -70,10 +71,10 @@ export function stepCraft(craft: CraftState, input: FlightInput, dt: number) {
 
   craft.x += Math.sin(craft.heading) * craft.speed * dt
   craft.z -= Math.cos(craft.heading) * craft.speed * dt
-  const radius = Math.hypot(craft.x, craft.z)
-  if (radius > RANGE_RADIUS) {
-    craft.x *= RANGE_RADIUS / radius
-    craft.z *= RANGE_RADIUS / radius
+  // Leave open water at the edge while the ocean wrapping system is pending.
+  if (Math.abs(craft.x) > WORLD_HALF || Math.abs(craft.z) > WORLD_HALF) {
+    craft.x = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, craft.x))
+    craft.z = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, craft.z))
     craft.speed = 0
   }
 }

@@ -6,7 +6,7 @@ A browser exploration game, beginning with a 1 × 1 km alien island, a hovercraf
 
 ## Current status
 
-**Phase 2 is playable locally.** The hovercraft test range has a marked gate, a bounded practice area, and live speed and position readouts.
+**Phase 3 is playable locally.** Explore Twilight Island, activate its three beacons, and return to Arrival Dock.
 
 Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, controls, ocean wrapping, hazards, respawn rules, architecture, and acceptance checks.
 
@@ -20,7 +20,7 @@ Read the [Phase 1 game design](docs/PHASE_1_GAME_DESIGN.md) for the map layout, 
 - Restart at the dock, with run progress reset, after hitting a danger.
 - Use desktop or touch controls with adjustable graphics and optional sound.
 
-The test range is available now. The island, beacons, repeating ocean, and hazards are later milestones.
+The island and beacon survey are available now. Ocean wrapping and hazards follow in Phases 4 and 5.
 
 ## Development roadmap
 
@@ -28,7 +28,7 @@ The test range is available now. The island, beacons, repeating ocean, and hazar
 | --- | --- | --- |
 | 1 | Game design and first-release scope | Complete |
 | 2 | Application, hovercraft controls, and camera | Complete |
-| 3 | Island, ocean, landmarks, and beacons | Planned |
+| 3 | Island, ocean, landmarks, and beacons | Complete |
 | 4 | Seamless repeating world | Planned |
 | 5 | Hazards, restart, and completion | Planned |
 | 6 | Visual polish, mobile support, and QA | Planned |
@@ -53,17 +53,20 @@ Open the local URL printed by Vite and select **Start flight**. The game require
 | Hold Shift while accelerating | Boost |
 | Drag the scene | Orbit the chase camera |
 | Scroll or pinch | Adjust the camera distance |
-| R or Reset | Return to the launch pad |
+| E or Activate beacon | Activate a beacon within 24 m |
+| R or Reset | Return to the dock and clear survey progress |
 | Escape or Pause | Pause or resume flight |
 | On-screen hold buttons | Steer, accelerate, brake, and boost on touch screens |
 
 Phase 2 uses React, TypeScript, Vite, Three.js, and React Three Fiber. The flight simulation runs at a fixed time step and is separate from input handling and scene rendering.
 
-`pnpm build` runs the TypeScript check and creates the production bundle. The Phase 2 browser check covered keyboard acceleration and release, turning, camera orbit and zoom, pause, and reset. The on-screen accelerator was exercised with pointer input at a 390px viewport. Physical phone and pinch testing are pending.
+`pnpm build` runs TypeScript checks and creates the production bundle. Phase 3 was checked in the browser for rendering, flight, and beacon progress. A flight simulation check covered reaching all three beacons, rejecting out-of-range and duplicate activation, and completing the survey at the dock. Physical phone testing is pending.
+
+The minimap is schematic. The heading arrow and distance point to the next unlit beacon, or to a nearby beacon you can activate. Beacons can be visited in any order. After all three are active, fly within 32 m of Arrival Dock to finish. The Phase 3 map stops at its boundary until ocean wrapping is added.
 
 ## Vercel
 
-[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 2 test range runs locally.
+[Open the Phase 1 design preview](https://infiniverse-saurodip-chowdhurys-projects.vercel.app). Vercel sign-in is required. The Phase 3 island runs locally.
 
 ## References
 

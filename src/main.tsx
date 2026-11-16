@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client'
 import { MathUtils } from 'three'
 import { createInput, keyBindings } from './flight'
 import { Range } from './Range'
+import { DOCK, freshSurvey } from './island'
+import { SurveyHud } from './SurveyHud'
 import './style.css'
 
 type Mode = 'ready' | 'driving' | 'paused'
@@ -26,7 +28,8 @@ function Game() {
   const [input] = useState(createInput)
   const [mode, setMode] = useState<Mode>('ready')
   const [motion, setMotion] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [telemetry, setTelemetry] = useState({ speed: 0, x: 0, z: 17 })
+  const [telemetry, setTelemetry] = useState({ speed: 0, x: DOCK.x, z: DOCK.z, heading: .28 })
+  const [survey, setSurvey] = useState(freshSurvey)
   const [webgl] = useState(() => {
     try {
       const context = document.createElement('canvas').getContext('webgl2')
@@ -42,6 +45,7 @@ function Game() {
 
   const transition = useCallback((next: Mode) => {
     input.paused = next !== 'driving'
+    input.activate = false
     input.keys.clear()
     input.touches.clear()
     pointers.current.clear()
@@ -50,6 +54,7 @@ function Game() {
   }, [input])
 
   const reset = useCallback(() => {
+    input.activate = false
     input.keys.clear()
     input.touches.clear()
     pointers.current.clear()
@@ -77,6 +82,7 @@ function Game() {
       }
       if (mode !== 'driving') return
       if (event.code === 'KeyR' && !event.repeat) reset()
+      if (event.code === 'KeyE' && !event.repeat) input.activate = true
       if (keyBindings[event.code]) {
         event.preventDefault()
         input.keys.add(event.code)
@@ -134,9 +140,9 @@ function Game() {
   }
 
   const releasePointer = (event: PointerEvent<HTMLDivElement>) => { pointers.current.delete(event.pointerId) }
-  const report = useCallback((speed: number, x: number, z: number) => {
-    setTelemetry(previous => previous.speed === speed && previous.x === x && previous.z === z
-      ? previous : { speed, x, z })
+  const report = useCallback((speed: number, x: number, z: number, heading: number) => {
+    setTelemetry(previous => previous.speed === speed && previous.x === x && previous.z === z && previous.heading === heading
+      ? previous : { speed, x, z, heading })
   }, [])
 
   const touchButton = (action: string, label: string, glyph: string) => {
@@ -154,13 +160,13 @@ function Game() {
   }
 
   return <main className="game">
-    <div className="viewport" ref={surface} tabIndex={-1} aria-label="Hovercraft test range"
+    <div className="viewport" ref={surface} tabIndex={-1} aria-label="Twilight island"
       onPointerDown={pointerStart} onPointerMove={pointerMove} onPointerUp={releasePointer}
       onPointerCancel={releasePointer} onLostPointerCapture={releasePointer}>
       {webgl && <SceneBoundary>
-        <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 640 }}
+        <Canvas camera={{ position: [0, 5, 27], fov: 55, near: .15, far: 1900 }}
           dpr={[1, 1.65]} gl={{ antialias: true }}>
-          <Range input={input} onTelemetry={report} reducedMotion={!motion} />
+          <Range input={input} onTelemetry={report} onSurvey={setSurvey} survey={survey} reducedMotion={!motion} />
         </Canvas>
       </SceneBoundary>}
     </div>
@@ -176,15 +182,18 @@ function Game() {
     </header>
 
     {(!webgl || mode !== 'driving') && <section className="intro" aria-labelledby="screen-title">
-      <p className="region">Phase 2 · Flight prototype</p>
-      <h1 id="screen-title">{mode === 'paused' ? 'Flight paused' : 'Hovercraft Test Range'}</h1>
+      <p className="region">Phase 3 · Island survey</p>
+      <h1 id="screen-title">{mode === 'paused' ? 'Flight paused' : 'Twilight Island'}</h1>
       {webgl ? <>
-        <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Take the hovercraft through the marked gate and get a feel for steering, boost, and the chase camera.'}</p>
+        <p>{mode === 'paused' ? 'Resume when you’re ready to fly.' : 'Follow the trails to three beacons, activate each one, then bring the hovercraft back to the dock.'}</p>
         <button type="button" className="primary" onClick={() => transition('driving')}>
           {mode === 'paused' ? 'Resume flight' : 'Start flight'} <span aria-hidden="true">→</span>
         </button>
       </> : <p role="alert">This game needs WebGL 2. Try a browser with hardware acceleration enabled.</p>}
     </section>}
+
+    {mode === 'driving' && <SurveyHud survey={survey} position={telemetry} heading={telemetry.heading}
+      activate={() => { input.activate = true; surface.current?.focus({ preventScroll: true }) }} />}
 
     {mode === 'driving' && <div className="touch-controls" aria-label="Touch flight controls">
       <div>{touchButton('left', 'Steer left', '←')}{touchButton('right', 'Steer right', '→')}</div>
@@ -195,7 +204,7 @@ function Game() {
       <div className="readout" aria-label="Flight telemetry">
         <span className="readout-label">{telemetry.speed < 0 ? 'Reverse' : 'Speed'}</span>
         <div><output aria-label="Speed">{Math.abs(telemetry.speed)}</output> <span>km/h</span></div>
-        <span className="coordinates" aria-label="Position">X {telemetry.x} · Z {telemetry.z}</span>
+        <span className="coordinates" aria-label="Position">X {Math.round(telemetry.x)} · Z {Math.round(telemetry.z)}</span>
       </div>
       <p className="keyboard"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Fly
         <span><kbd>Shift</kbd> Boost</span><span>Drag to orbit · Scroll to zoom</span>
