@@ -51,25 +51,153 @@ The next release expands the starting planet into four connected regions. The mi
 
 Phase 3 begins with travel beyond the four planet gateways.
 
+### How to run these development prompts
+
+Copy the shared instructions and **one numbered prompt** into the development session for the active Infiniverse checkout. Run the prompts in order. Each one starts from the last accepted milestone and ends with a result you can playtest.
+
+> **Shared instructions:** Inspect the active game checkout, its assets, and its current build and preview commands. Read the previous milestone's verification notes. If the checkout lacks a required prerequisite, identify it before implementing dependent work. Reuse suitable assets and document any missing assets or licensing needs. Preserve the starting island, working controls and map, existing activities, and streaming behaviour unless this prompt explicitly changes them. Keep ambient hazards and character routes clear of protected activity lanes. Implement this milestone through normal gameplay, run the production build, and follow the acceptance check in the running game. Report what changed, which route or location you tested, any relevant performance observations, and anything you could not verify. Keep screenshots or short clips when the acceptance check calls for visual evidence. Leave space travel for Phase 3.
+
 ### 2.3 — Districts and roadside scenery
 
-| Subphase | Build | Acceptance check |
-| --- | --- | --- |
-| **2.3.1 — Lay out destinations** | Mark each district's main landmark, highway turnoff, approach road, local loop, and connections to adjacent areas. Reserve enough terrain for slopes, bridges, service yards, and activity approaches before placing buildings. | From the driver's view, you can see where to turn and reach the district by road. |
-| **2.3.2 — Finish the east corridor** | Build a waterfront with docks and quays, a village with a square and several storefronts, and gardens with orchard rows, barns, and service lanes. Give each stop its own silhouette and arrival point. | Drive from the harbor through the village to the gardens. Each stop is recognisable before reaching its map marker. |
-| **2.3.3 — Build north, south, and west** | North gets a lodge, hillside cabins, logging yards, and ridge trails. South gets farmsteads, market streets, barns, and irrigation crossings. West gets a quarry, workshops, and Meadow Stunt Park. Use local side streets and yards to make the buildings feel connected. | Each corridor has a recognisable main destination, smaller places to explore, and a local route back to the highway. |
-| **2.3.4 — Fill the stretches between districts** | Place farm plots, wooded slopes, roadside stops, trailheads, and overlooks in deliberate groups. Use hill crests and curves to reveal landmarks gradually. Sign turns early enough to take them at cruising speed. | Record an uninterrupted drive in each direction. Revise empty stretches where you pass neither a change in scenery nor a visible destination or turnoff. |
-| **2.3.5 — Make places usable** | Add a few purpose-built interactions, such as a market pickup, harbor route board, and garage trial start. Check that entrances, yards, bridges, and paths are driveable and that scenery fits the terrain across loading boundaries. | Find each interaction from the road, use it, and drive away. Return to confirm the district loads consistently. |
+#### 2.3.1 — Survey the world and map the districts
+
+**Build prompt.** Drive the four routes from 2.2 and record the existing landmarks, approach directions, grades, terrain seams, and stretches that feel empty. Plan an anchor destination, smaller stops, and a connected local loop in each direction. Mark the junctions, bridges, service lanes, lookout points, and space reserved for future activities. Use the existing game map and road data where practical so the plan matches the world players can drive.
+
+**Acceptance check.** Trace a route from the island to every district and back to the highway. Confirm each proposed footprint has enough driveable space without overlapping an existing activity or narrowing the main boost lanes.
+
+#### 2.3.2 — Set the district layout and density standard
+
+**Build prompt.** Use Crossroads Village as the first complete district. Lay out the main street, square, side streets, and building plots before decorating. Vary building orientation and spacing according to frontage, views, and terrain. Establish how wide the roads and turning areas need to be, how soon signs should appear, and which roadside details are readable at cruising speed. Reuse those standards across the other districts.
+
+**Acceptance check.** Approach from two directions at normal speed. Find the square without fast travel, make a full local loop, and compare the view from the junction, the main street, and the square.
+
+#### 2.3.3 — Finish Lantern Harbor
+
+**Build prompt.** Shape the waterfront around a usable crossing and two banks with distinct functions. Connect bridges, docks, shore paths, shops, and service yards. Leave clear vehicle access at the dock ramps and bridge ends. Place quay furniture and lanterns along the pedestrian edge, using them to show where the public paths go. Build an approach view that reveals the water and bridge before the player reaches the turn.
+
+**Acceptance check.** Drive in from the island, cross each public bridge, and return along the shore. Check that deck surfaces and rail collisions line up and that the waterfront remains visible from the driving camera.
+
+#### 2.3.4 — Add storefronts and side streets to Crossroads Village
+
+**Build prompt.** Develop the square from 2.3.2 into a village centre with a market, distinct storefronts, houses, a quieter lane, and rear service access. Give buildings signs and a reason to face the street. Use doors, awnings, benches, planters, and delivery bays to make the street feel used. Reserve walking routes, gathering areas, and sheltered spots for 2.4.
+
+**Acceptance check.** Follow a signed turn from the highway, drive around the square, find two distinct businesses, and leave via a side street. Verify that the hovercraft has room to turn without climbing kerbs or clipping scenery.
+
+#### 2.3.5 — Finish Cherry Gardens and the orchard road
+
+**Build prompt.** Use planting rows, orchard blocks, hedges, paths, and farm structures to give the area a recognisable layout. Connect a barn or packing shed to a service road, link that road to the village, and retain a separate space for the existing crate challenge. Leave habitat pockets near tree cover and clear approaches into the estate.
+
+**Acceptance check.** Follow the village road to the garden, identify the orchard and service yard from the normal camera, and reach and retry the crate challenge without driving through the planted rows.
+
+#### 2.3.6 — Build the northern forest and ridge district
+
+**Build prompt.** Create a forest approach that opens onto a hillside lodge, cabins, and a signed ridge trail. Alternate enclosed woodland with clearings and broad views. Use slope-aware placement for the buildings and paths, provide a driveable pullout at the overlook, and reserve a ridge crest with a clear approach and landing for a later stunt.
+
+**Acceptance check.** Drive from the highway through the trees to the lodge and take the ridge trail back. Check sightlines at crests and verify that trees and scenery stay outside the intended driving line.
+
+#### 2.3.7 — Build the southern farms and market district
+
+**Build prompt.** Connect farmsteads, barns, irrigated fields, and a roadside market with visible work lanes and a small number of crossings. Vary field size, orientation, and planting so the view changes as you drive. Reserve delivery pickup and drop-off areas with room to turn. Use hedges and irrigation lines to guide drivers toward safe entrances.
+
+**Acceptance check.** Drive from the highway to a farmhouse, cross the irrigation route, and reach the market by a second road. Check that field access stays legible and that a future delivery route can use both approaches.
+
+#### 2.3.8 — Build the western quarry and workshop district
+
+**Build prompt.** Shape quarry benches, cuts, and haul roads around a workshop yard and the existing Meadow Stunt Park. Give the district a recognisable approach using terrain, buildings, and signage. Separate the through road, service yard, spectator space, and future stunt lines. Connect the park to the rest of the district without routing general traffic across jump approaches or landings.
+
+**Acceptance check.** Enter through the workshop approach, follow a quarry loop, and reach the stunt park from the road. Check grades, collision at retaining walls, and the ability to turn back from the lowest point.
+
+#### 2.3.9 — Fill the drives between districts
+
+**Build prompt.** Review each highway from the driver's point of view and add scenery where the next destination disappears from view. Choose details that belong to the adjacent region, such as an orchard edge, wooded slope, trailhead, farm stand, or quarry access road. Vary the spacing and preserve clear sightlines through bends. Give quieter stretches a view, a terrain change, or a visible turnoff.
+
+**Acceptance check.** Capture a continuous normal-speed drive along each route. Use the footage to identify and fix weak stretches. Include ordinary roadside views in the evidence alongside the main landmarks.
+
+#### 2.3.10 — Add navigation and usable businesses
+
+**Build prompt.** Add readable approach signs, map labels, and local directions for each district. Make at least one stop per district usable through an existing interaction pattern, such as a harbor route board, farm pickup point, lodge trail sign, or workshop trial start. Give each interaction a clear prompt and a safe place to stop.
+
+**Acceptance check.** Starting on the island, find a selected stop using the map and signs, activate its interaction, then rejoin the highway. Verify that signs and map labels agree and remain useful without fast travel.
+
+#### 2.3.11 — Fit buildings, paths, and collisions to the terrain
+
+**Build prompt.** Audit large props, building entrances, bridges, fences, retaining walls, and marked shortcuts. Match collision to visible surfaces, ground the objects on slopes, and keep road joins smooth across streaming boundaries. Check spawning and unloading for large sites that occupy more than one terrain chunk.
+
+**Acceptance check.** Drive representative junctions and bridges slowly and at boost where the route allows it. Leave and return to each district, checking for floating objects, invisible collisions, missing landmarks, and objects remaining after unload.
+
+#### 2.3.12 — Review all four regions before population
+
+**Build prompt.** Drive every main route and its local loops, review comparisons against the village benchmark, and fix the largest gaps in density, visibility, and local navigation. Mark the final gathering areas, wildlife pockets, crossings, and service routes for 2.4. Update any map labels and handoff notes changed by the review.
+
+**Acceptance check.** Save normal-view evidence from each district and at least one stretch between districts per route. List every populated area planned for 2.4 and the closest signed turnoff for reaching it.
 
 ### 2.4 — People, wildlife, and ambient movement
 
-| Subphase | Build | Acceptance check |
-| --- | --- | --- |
-| **2.4.1 — Plan where life belongs** | Assign gathering points, walking routes, work areas, and refuge spots. Place customers near shops, workers at docks and farms, spectators at stunt areas, and wildlife near habitat cover. | Each populated area has a reason to be busy, with space for the hovercraft to pass. |
-| **2.4.2 — Give people routines** | Start with simple loops between doors, stalls, benches, and work areas. Stagger timing and mix walking, waiting, and working. Aim initially for **6–12 visible people** from the normal camera in a busy square. | Watch the square from a parked hovercraft and then drive through it. Characters move through the district without clumping at a single spot. |
-| **2.4.3 — Add wildlife by habitat** | Give orchards, fields, forest clearings, and shorelines separate placement rules. Start with **3–6 visible animals** in an active habitat using suitable models and simple wandering, resting, and group movement. | Wildlife is easy to notice on nearby side roads. Groups remain in believable habitat and can be seen again on a return visit. |
-| **2.4.4 — Add reactions and ambient traffic** | Have people step to the side and wildlife scatter toward cover when the hovercraft approaches. Add occasional service vehicle routes around farms and workshops with clear pullouts and turning space. | Driving past at cruising speed and boost produces readable reactions. Activity stays clear of dedicated boost lanes and jump landings. |
-| **2.4.5 — Tune density and streaming** | Keep higher activity around the player, with simpler updates farther away. Stagger spawns and use stable placements on return. Tune busy, quiet, and transitional areas in actual gameplay. | Drive through each population type, turn back across loading boundaries, and check for sudden pop-in, duplicate spawns, dead zones, and frame drops. |
+#### 2.4.1 — Inventory character assets and plan population
+
+**Build prompt.** Inspect the existing models, rigs, and animations for people, wildlife, and service vehicles. Identify which can be reused with a consistent visual style. For each district, define roles or species, gathering spots, routes, cover or refuge, and expected visible counts. Document missing models before committing to species or routines that need them.
+
+**Acceptance check.** Every planned population group has a suitable model or a documented asset gap, a place to spawn, a safe space to move, and a route or habitat that makes sense for that location.
+
+#### 2.4.2 — Build shared placement and streaming
+
+**Build prompt.** Implement reusable spawn groups tied to district and terrain ownership. Ground characters at their spawn points, assign stable layouts on return, and cap the number active around the player. Keep one owner per group so overlapping terrain chunks do not duplicate characters. Clean up models, animation updates, and routes when their area unloads.
+
+**Acceptance check.** Place demonstration groups in two adjacent districts. Drive back and forth across a loading boundary and verify counts, grounding, and cleanup.
+
+#### 2.4.3 — Make Crossroads Village the busy population benchmark
+
+**Build prompt.** Fill the square and adjacent street with customers, shopkeepers, walkers, and people waiting near suitable props. Give them staggered loops between storefronts, stalls, benches, and side streets. Start with **6–12 visible people** from the ordinary driving camera and adjust after watching the scene from several approaches.
+
+**Acceptance check.** Park near the square and observe a full routine cycle, then drive a loop through the village. Check for dead corners, synchronized movement, crowd clumping, and characters walking through buildings.
+
+#### 2.4.4 — Give each region different human activity
+
+**Build prompt.** Extend the village routines with work-specific stops: dock workers near quays, farm workers near sheds and rows, lodge visitors near trailheads, and workshop staff and spectators at the quarry and park. Vary how long people stay at each stop. Use smaller groups at outposts and reserve busier groups for public spaces.
+
+**Acceptance check.** Visit one busy and one quiet stop in each region. The activity should suit the place and be visible from the road or a natural pullout.
+
+#### 2.4.5 — Add believable wildlife in orchards and fields
+
+**Build prompt.** Use verified animal models for groups near orchard cover, field edges, and hedges. Implement short bouts of wandering, resting, and regrouping. Ground animals on uneven terrain, space individuals so they stay recognisable, and keep spawn points within cover or visible habitat. Start with **3–6 visible animals** in an active habitat and tune from the gameplay camera.
+
+**Acceptance check.** Approach from two local roads and stop to observe the group. Confirm that the animals are recognisable, move independently, and stay clear of buildings and crop walls.
+
+#### 2.4.6 — Extend wildlife to forest and waterfront habitats
+
+**Build prompt.** Add forest groups near clearings and safe shoreline groups where suitable assets exist. Give habitats different movement areas, cover, and ways for the player to spot them. Keep ground animals on land, away from steep cuts, and outside high-speed approach lanes. Place viewpoints or pullouts where wildlife can be observed naturally.
+
+**Acceptance check.** Visit the habitats from their intended approach roads. Confirm that each group stays in its habitat, appears from a practical viewing distance, and behaves consistently on return.
+
+#### 2.4.7 — React to the hovercraft
+
+**Build prompt.** Detect approaching vehicles early enough for people to step aside and for animals to scatter toward cover. Use a bounded refuge route with a short recovery period before routine movement resumes. Tune the response using approach direction and speed so a parked hovercraft does not keep everyone scattering. Provide reactions for nearby ambient impacts where they fit the habitat.
+
+**Acceptance check.** Try a slow approach, a normal pass, and a fast pass along an adjacent road. Check that reactions are readable, characters do not move into the hovercraft's path, and routines resume afterward.
+
+#### 2.4.8 — Add occasional service traffic
+
+**Build prompt.** Add a small number of service vehicles with predictable loops between workshops, farms, or harbor service roads. Define pullouts and turnaround space. Give vehicles simple following and yielding behaviour where their roads meet. Keep them away from timed activity courses, designated boost lanes, and jump landings.
+
+**Acceptance check.** Follow a service vehicle through a complete route and test a junction encounter from both directions. Confirm the player can pass safely and that traffic resets cleanly after leaving and returning.
+
+#### 2.4.9 — Coordinate population with activities and hazards
+
+**Build prompt.** Set explicit areas where spectators may gather, where traffic may pass, and where characters should stay clear during a race, jump, or crate challenge. Ensure ambient meteor targeting and evacuation behaviour keep routes readable near busy areas. Resume normal routines after completion, cancellation, or respawn.
+
+**Acceptance check.** Start, finish, abandon, and retry an activity beside a populated district. Observe an ambient hazard in free roam and confirm the population and activity states recover correctly.
+
+#### 2.4.10 — Tune visibility, density, and performance
+
+**Build prompt.** Measure crowd and wildlife counts from normal gameplay, then tune visibility distance, update frequency, and group size on representative desktop and touch configurations. Preserve lively views near the player and reduce work farther away. Watch for delayed spawns when approaching a district at boost and for abrupt disappearance in clear view.
+
+**Acceptance check.** Compare busy squares, habitats, quiet routes, and fast approaches. Record frame-time observations and visible counts, and adjust the density where the scene looks empty or performance drops.
+
+#### 2.4.11 — Prove the world feels alive on return visits
+
+**Build prompt.** Run a full population playtest across all four regions. Park, drive through, leave the streaming area, and return to each major district. Fix repeated choreography, duplicates, stuck characters, empty activity hotspots, and reactions that look wrong at normal camera distance. Document unresolved asset limitations and any scenes that need later improvement.
+
+**Acceptance check.** Provide an in-game clip or screenshot sequence of a busy square, rural work area, wildlife habitat, and service route. Confirm that characters move and react in play and that revisiting districts restores the intended population.
 
 ## Run the game locally
 
